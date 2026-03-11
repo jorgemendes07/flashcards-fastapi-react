@@ -1,13 +1,16 @@
 from datetime import datetime
 from sqlalchemy import String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import List
+from typing import List, TYPE_CHECKING
 
 from app.database.database import Base
 
+if TYPE_CHECKING:
+    from .deck import Deck
+    from .card import Card
+
 class User(Base):
     __tablename__ = "users"
-
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     

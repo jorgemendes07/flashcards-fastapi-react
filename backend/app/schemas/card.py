@@ -10,7 +10,7 @@ class CardBase(BaseModel):
     difficulty: Optional[CardDifficulty] = None
 
 class CardCreate(CardBase):
-    deck_id: int
+    pass
 
 class CardResponse(CardBase):
     id: int

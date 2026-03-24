@@ -61,6 +61,18 @@ def list_decks(user_id: int, db: Session = Depends(get_db)):
     
     return db.query(Deck).filter(Deck.user_id == user_id).all()
 
+@app.delete("/decks/{deck_id}", status_code=204)
+def delete_deck(deck_id: int, db: Session = Depends(get_db)):
+    db_deck = db.query(Deck).filter(Deck.id == deck_id).first()
+
+    if not db_deck:
+        raise HTTPException(status_code=404, detail="Deck não encontrado")
+    
+    db.delete(db_deck)
+    db.commit()
+
+    return None
+
 # Cards
 @app.post("/{user_id}/{deck_id}/cards", response_model=CardResponse, status_code=201)
 def create_card(user_id: int, deck_id: int, card: CardCreate, db: Session = Depends(get_db)):
@@ -82,3 +94,15 @@ def list_cards(user_id: int, deck_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Deck não encontrado")
 
     return db.query(Card).filter(Card.deck_id == deck_id).all()
+
+@app.delete("/cards/{card_id}", status_code=204)
+def delete_card(card_id: int, db: Session = Depends(get_db)):
+    db_card = db.query(Card).filter(Card.id == card_id).first()
+
+    if not db_card:
+        raise HTTPException(status_code=404, detail="Card não encontrado")
+    
+    db.delete(db_card)
+    db.commit()
+
+    return None

@@ -1,11 +1,15 @@
 from pydantic import BaseModel, ConfigDict
 from datetime import datetime
+from typing import Optional
 
 class DeckBase(BaseModel):
     name: str
 
 class DeckCreate(DeckBase):
     pass
+
+class DeckUpdate(BaseModel):
+    name: str
 
 class DeckResponse(DeckBase):
     id: int

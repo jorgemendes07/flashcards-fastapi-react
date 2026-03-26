@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.database.database import engine, Base, get_db
 from app.models import User, Deck, Card
-from app.schemas import UserCreate, UserResponse, DeckCreate, DeckResponse, CardCreate, CardResponse
+from app.schemas import UserCreate, UserResponse, DeckCreate, DeckUpdate, DeckResponse, CardCreate, CardUpdate, CardResponse
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -61,6 +61,20 @@ def list_decks(user_id: int, db: Session = Depends(get_db)):
     
     return db.query(Deck).filter(Deck.user_id == user_id).all()
 
+@app.patch("/decks/{deck_id}", response_model=DeckResponse)
+def update_deck(deck_id: int, deck_data: DeckUpdate, db: Session = Depends(get_db)):
+    db_deck = db.query(Deck).filter(Deck.id == deck_id).first()
+
+    if not db_deck:
+        raise HTTPException(status_code=404, detail="Deck não encontrado")
+    
+    db_deck.name = deck_data.name
+
+    db.commit()
+    db.refresh(db_deck)
+
+    return db_deck
+
 @app.delete("/decks/{deck_id}", status_code=204)
 def delete_deck(deck_id: int, db: Session = Depends(get_db)):
     db_deck = db.query(Deck).filter(Deck.id == deck_id).first()
@@ -94,6 +108,23 @@ def list_cards(user_id: int, deck_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Deck não encontrado")
 
     return db.query(Card).filter(Card.deck_id == deck_id).all()
+
+@app.patch("/cards/{card_id}", response_model=CardResponse)
+def update_card(card_id: int, card_data: CardUpdate, db: Session = Depends(get_db)):
+    db_card = db.query(Card).filter(Card.id == card_id).first()
+
+    if not db_card:
+        raise HTTPException(status_code=404, detail="Card não encontrado")
+    
+    update_data = card_data.model_dump(exclude_unset=True)
+
+    for key, value in update_data.items():
+        setattr(db_card, key, value)
+
+    db.commit()
+    db.refresh(db_card)
+
+    return db_card
 
 @app.delete("/cards/{card_id}", status_code=204)
 def delete_card(card_id: int, db: Session = Depends(get_db)):

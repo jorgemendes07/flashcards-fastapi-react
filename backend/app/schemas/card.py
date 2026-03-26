@@ -12,6 +12,11 @@ class CardBase(BaseModel):
 class CardCreate(CardBase):
     pass
 
+class CardUpdate(BaseModel):
+    front: Optional[str] = None
+    back: Optional[str] = None
+    difficulty: Optional[CardDifficulty] = None
+
 class CardResponse(CardBase):
     id: int
     deck_id: int

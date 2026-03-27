@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.database.database import engine, Base, get_db
 from app.models import User, Deck, Card
-from app.schemas import UserCreate, UserResponse, DeckCreate, DeckUpdate, DeckResponse, CardCreate, CardUpdate, CardResponse
+from app.schemas import UserCreate,UserUpdate, UserResponse, DeckCreate, DeckUpdate, DeckResponse, CardCreate, CardUpdate, CardResponse
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -23,6 +23,7 @@ app = FastAPI(
 @app.post("/users", response_model=UserResponse, status_code=201)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.email == user.email).first()
+    
     if db_user:
         raise HTTPException(status_code=400, detail="E-mail já cadastrado")
     
@@ -39,10 +40,36 @@ def list_users(db: Session = Depends(get_db)):
     users = db.query(User).all()
     return users
 
+@app.patch("/users/{user_id}", response_model=UserResponse)
+def update_user(user_id: int, user_data: UserUpdate, db: Session = Depends(get_db)):
+    db_user = db.query(User).filter(User.id == user_id).first()
+
+    if not db_user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    
+    if user_data.email:
+        email_exists = db.query(User).filter(
+            User.email == user_data.email,
+            User.id != user_id
+        ).first()
+    
+        if email_exists:
+            raise HTTPException(status_code=400, detail="E-mail já está em uso")
+    
+        db_user.email = user_data.email
+
+    if user_data.password:
+        db_user.password = user_data.password
+
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
 #Decks
 @app.post("/{user_id}/decks", response_model=DeckResponse, status_code=201)
 def create_deck(user_id: int, deck: DeckCreate, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
+    
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
     
@@ -56,6 +83,7 @@ def create_deck(user_id: int, deck: DeckCreate, db: Session = Depends(get_db)):
 @app.get("/{user_id}/decks", response_model=List[DeckResponse])
 def list_decks(user_id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
+    
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
     
@@ -91,6 +119,7 @@ def delete_deck(deck_id: int, db: Session = Depends(get_db)):
 @app.post("/{user_id}/{deck_id}/cards", response_model=CardResponse, status_code=201)
 def create_card(user_id: int, deck_id: int, card: CardCreate, db: Session = Depends(get_db)):
     deck = db.query(Deck).filter(Deck.id == deck_id, Deck.user_id == user_id).first()
+    
     if not deck:
         raise HTTPException(status_code=404, detail="Deck não encontrado")
      
@@ -104,6 +133,7 @@ def create_card(user_id: int, deck_id: int, card: CardCreate, db: Session = Depe
 @app.get("/{user_id}/{deck_id}/cards", response_model=List[CardResponse])
 def list_cards(user_id: int, deck_id: int, db: Session = Depends(get_db)):
     deck = db.query(Deck).filter(Deck.id == deck_id, Deck.user_id == user_id).first()
+    
     if not deck:
         raise HTTPException(status_code=404, detail="Deck não encontrado")
 

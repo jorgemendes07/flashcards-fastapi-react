@@ -1,6 +1,15 @@
 import deckIcon from './../../assets/deck-icon.png'
+import api from '../../services/api'
 
-export default function({ decks }) {
+export default function({ decks, onDelete }) {
+    const handleDelete = async (id) => {
+        try {
+            await api.delete(`/decks/${id}`)
+            onDelete(id)
+        } catch (err) {
+            alert("Erro ao excluir Deck:" + err.message)
+        }
+    }
     
     return (
         <div className="bg-gray-100 h-screen p-4 m-auto">
@@ -22,7 +31,9 @@ export default function({ decks }) {
                             </div>
                             <div className='text-sm text-gray-400'>
                                 <i className="fa-solid fa-pen cursor-pointer mr-1 hover:text-gray-500"></i>
-                                <i className="fa-solid fa-trash cursor-pointer hover:text-gray-500"></i>
+                                <i className="fa-solid fa-trash cursor-pointer hover:text-gray-500"
+                                    onClick={() => handleDelete(deck.id)}
+                                ></i>
                             </div>
                         </div> 
                     </div>

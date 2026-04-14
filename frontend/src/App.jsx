@@ -28,11 +28,15 @@ function App() {
   const addDeckToList = (newDeck) => {
     setDecks([...decks, newDeck])
   };
+
+  const removeDeckFromList = (id) => {
+    setDecks(decks.filter(deck => deck.id !== id));
+  }
   
   return (
     <div>
       <Banner onOpenModal={openModal} />
-      <DeckList decks={decks}/>
+      <DeckList decks={decks} onDelete={removeDeckFromList}/>
 
       {isModalOpen && <NewDeckModal onClose={closeModal} onDeckCreated={addDeckToList} />}
     </div>

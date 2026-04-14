@@ -3,9 +3,11 @@ import api from './services/api';
 import DeckList from './components/DeckList';
 import Banner from './components/Banner';
 import NewDeckModal from './components/NewDeckModal';
+import EditDeckModal from './components/EditDeckModal';
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deckBeingEdited, setDeckBeingEdited] = useState(null);
   const [decks, setDecks] = useState([]);
 
     useEffect(() => {
@@ -32,13 +34,26 @@ function App() {
   const removeDeckFromList = (id) => {
     setDecks(decks.filter(deck => deck.id !== id));
   }
+
+  const updateDeckInList = (updatedDeck) => {
+    setDecks(decks.map(deck => {
+      return deck.id === updatedDeck.id ? updatedDeck : deck
+    }));
+    setDeckBeingEdited(null);
+  }
   
   return (
     <div>
       <Banner onOpenModal={openModal} />
-      <DeckList decks={decks} onDelete={removeDeckFromList}/>
+      <DeckList 
+        decks={decks} 
+        onDelete={removeDeckFromList}
+        onEdit={setDeckBeingEdited}
+      />
 
       {isModalOpen && <NewDeckModal onClose={closeModal} onDeckCreated={addDeckToList} />}
+
+      {deckBeingEdited && <EditDeckModal deck={deckBeingEdited} onClose={() => setDeckBeingEdited(null)} onUpdate={updateDeckInList} />}
     </div>
   );
 }

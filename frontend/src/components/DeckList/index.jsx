@@ -1,7 +1,7 @@
 import deckIcon from './../../assets/deck-icon.png'
 import api from '../../services/api'
 
-export default function({ decks, onDelete }) {
+export default function({ decks, onDelete, onEdit }) {
     const handleDelete = async (id) => {
         try {
             await api.delete(`/decks/${id}`)
@@ -30,7 +30,9 @@ export default function({ decks, onDelete }) {
                                 {deck.name}
                             </div>
                             <div className='text-sm text-gray-400'>
-                                <i className="fa-solid fa-pen cursor-pointer mr-1 hover:text-gray-500"></i>
+                                <i className="fa-solid fa-pen cursor-pointer mr-1 hover:text-gray-500"
+                                    onClick={() => onEdit(deck)}
+                                ></i>
                                 <i className="fa-solid fa-trash cursor-pointer hover:text-gray-500"
                                     onClick={() => handleDelete(deck.id)}
                                 ></i>
